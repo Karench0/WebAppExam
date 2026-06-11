@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Добавление рецензии - Электронная библиотека{% endblock %}
+
+{% block content %}
+<h2><i class="bi bi-pencil-square"></i> Рецензия на книгу «{{ book.title }}»</h2>
+<hr>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="rating" class="form-label">Оценка</label>
+        <select class="form-select" id="rating" name="rating" style="width: auto;">
+            <option value="5" {% if form_data.get('rating') == '5' %}selected{% endif %}>5 – отлично</option>
+            <option value="4" {% if form_data.get('rating') == '4' %}selected{% endif %}>4 – хорошо</option>
+            <option value="3" {% if form_data.get('rating') == '3' %}selected{% endif %}>3 – удовлетворительно</option>
+            <option value="2" {% if form_data.get('rating') == '2' %}selected{% endif %}>2 – неудовлетворительно</option>
+            <option value="1" {% if form_data.get('rating') == '1' %}selected{% endif %}>1 – плохо</option>
+            <option value="0" {% if form_data.get('rating') == '0' %}selected{% endif %}>0 – ужасно</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="text" class="form-label">Текст рецензии</label>
+        <textarea class="form-control" id="text" name="text" rows="10">{{ form_data.text if form_data.text else '' }}</textarea>
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-lg"></i> Сохранить
+        </button>
+        <a href="{{ url_for('book_view', book_id=book.id) }}" class="btn btn-secondary">
+            <i class="bi bi-x-lg"></i> Отмена
+        </a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const easyMDE = new EasyMDE({
+        element: document.getElementById('text'),
+        spellChecker: false,
+        status: false,
+        toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "preview"],
+    });
+</script>
+{% endblock %}

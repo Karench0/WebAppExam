@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - Электронная библиотека{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        {% if cover %}
+        <img src="{{ url_for('static', filename='uploads/' + cover.filename) }}"
+             class="img-fluid rounded shadow mb-3 cover-img" alt="{{ book.title }}">
+        {% else %}
+        <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 300px;">
+            <i class="bi bi-book text-muted" style="font-size: 4rem;"></i>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <h2>{{ book.title }}</h2>
+        <table class="table">
+            <tr>
+                <th width="150">Автор</th>
+                <td>{{ book.author }}</td>
+            </tr>
+            <tr>
+                <th>Год</th>
+                <td>{{ book.year }}</td>
+            </tr>
+            <tr>
+                <th>Издательство</th>
+                <td>{{ book.publisher }}</td>
+            </tr>
+            <tr>
+                <th>Объём</th>
+                <td>{{ book.pages }} стр.</td>
+            </tr>
+            <tr>
+                <th>Жанры</th>
+                <td>
+                    {% if book.genres %}
+                    {% for genre in book.genres.split(', ') %}
+                    <span class="badge bg-secondary">{{ genre }}</span>
+                    {% endfor %}
+                    {% else %}
+                    <span class="text-muted">Не указаны</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Рейтинг</th>
+                <td>
+                    <span class="rating-stars">
+                        {% for i in range(5) %}
+                            {% if i < book.avg_rating|round(0, 'floor')|int %}
+                            <i class="bi bi-star-fill"></i>
+                            {% elif i < book.avg_rating %}
+                            <i class="bi bi-star-half"></i>
+                            {% else %}
+                            <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                    {{ "%.1f"|format(book.avg_rating|float) }}
+                    <small class="text-muted">({{ book.review_count }} рецензий)</small>
+                </td>
+            </tr>
+        </table>
+
+        {% if g.role_name in ['Администратор', 'Модератор'] %}
+        <a href="{{ url_for('book_edit', book_id=book.id) }}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Редактировать
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<hr>
+
+<h4>Описание</h4>
+<div class="card mb-4">
+    <div class="card-body">
+        {{ description_html|safe }}
+    </div>
+</div>
+
+<h4>Рецензии</h4>
+{% if reviews %}
+{% for review in reviews %}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+        <strong>{{ review.last_name }} {{ review.first_name }} {% if review.patronymic %}{{ review.patronymic }}{% endif %}</strong>
+        <small class="text-muted">{{ review.created_at }}</small>
+    </div>
+    <div class="card-body">
+        <p class="mb-2">
+            <span class="rating-stars">
+                {% for i in range(5) %}
+                    {% if i < review.rating %}
+                    <i class="bi bi-star-fill"></i>
+                    {% else %}
+                    <i class="bi bi-star"></i>
+                    {% endif %}
+                {% endfor %}
+            </span>
+            <strong>{{ review.rating }}/5</strong>
+        </p>
+        <div>{{ review.text|markdown|safe }}</div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-secondary">
+    <i class="bi bi-chat"></i> Рецензий пока нет.
+</div>
+{% endif %}
+
+{% if g.user %}
+    {% if user_review %}
+    <div class="card border-primary mb-3">
+        <div class="card-header bg-primary text-white">
+            <strong>Ваша рецензия</strong>
+        </div>
+        <div class="card-body">
+            <p class="mb-2">
+                <span class="rating-stars">
+                    {% for i in range(5) %}
+                        {% if i < user_review.rating %}
+                        <i class="bi bi-star-fill"></i>
+                        {% else %}
+                        <i class="bi bi-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </span>
+                <strong>{{ user_review.rating }}/5</strong>
+            </p>
+            <div>{{ user_review.text|markdown|safe }}</div>
+        </div>
+    </div>
+    {% else %}
+    <a href="{{ url_for('review_add', book_id=book.id) }}" class="btn btn-primary">
+        <i class="bi bi-pencil-square"></i> Написать рецензию
+    </a>
+    {% endif %}
+{% endif %}
+{% endblock %}
