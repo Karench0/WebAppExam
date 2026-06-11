@@ -8,7 +8,6 @@
 - SQLite
 - Jinja2
 - Bootstrap 5
-- EasyMDE (редактор Markdown)
 
 ## Запуск проекта
 
