@@ -232,6 +232,61 @@ def login():
     return render_template("login.html")
 
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        login_val = request.form.get("login", "").strip()
+        password = request.form.get("password", "")
+        password_confirm = request.form.get("password_confirm", "")
+        last_name = request.form.get("last_name", "").strip()
+        first_name = request.form.get("first_name", "").strip()
+        patronymic = request.form.get("patronymic", "").strip() or None
+
+        errors = []
+        if not login_val:
+            errors.append("Логин обязателен")
+        if not password:
+            errors.append("Пароль обязателен")
+        if password != password_confirm:
+            errors.append("Пароли не совпадают")
+        if len(password) < 6:
+            errors.append("Пароль должен содержать минимум 6 символов")
+        if not last_name:
+            errors.append("Фамилия обязательна")
+        if not first_name:
+            errors.append("Имя обязательно")
+
+        if not errors:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE login = ?", (login_val,))
+            if cursor.fetchone():
+                errors.append("Пользователь с таким логином уже существует")
+
+            if errors:
+                conn.close()
+            else:
+                try:
+                    pw_hash = generate_password_hash(password)
+                    cursor.execute(
+                        "INSERT INTO users (login, password_hash, last_name, first_name, patronymic, role_id) VALUES (?, ?, ?, ?, ?, ?)",
+                        (login_val, pw_hash, last_name, first_name, patronymic, 3),
+                    )
+                    conn.commit()
+                    flash("Регистрация успешна. Теперь вы можете войти.", "success")
+                    return redirect(url_for("login"))
+                except Exception:
+                    conn.rollback()
+                    errors.append("Ошибка при регистрации")
+                finally:
+                    conn.close()
+
+        for e in errors:
+            flash(e, "danger")
+
+    return render_template("register.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()

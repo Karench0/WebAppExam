@@ -117,9 +117,9 @@ def setup():
     )
 
     users = [
-        ("admin", "admin123", "Мкртчян", "Карен", None, 1),
-        ("moderator", "mod123", "Мкртчян", "Карен", None, 2),
-        ("user", "user123", "Мкртчян", "Карен", None, 3),
+        ("admin", "admin123", "Админ", "Карен", "Админович", 1),
+        ("moderator", "mod123", "Модератор", "Карен", "Модераторович", 2),
+        ("user", "user123", "Пользователь", "Карен", "Пользователевич", 3),
     ]
     for login, password, last, first, patron, role_id in users:
         pw_hash = generate_password_hash(password)
